@@ -25,7 +25,7 @@ func (r *UserRepository) Create(ctx context.Context, usr *entities.UserInfo) (id
 	row := r.Pool.QueryRow(
 		ctx,
 		"INSERT INTO user_info(user_id, firstname, middlename, lastname, gender, phone, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
-		usr.UserID, usr.Firstname, usr.Middlename, usr.Lastname, usr.Gender, usr.Phone, usr.IconURL, time.Now(), time.Now())
+		usr.UserID, usr.Firstname, usr.Middlename, usr.Lastname, usr.Gender, usr.Phone, time.Now(), time.Now())
 
 	err = row.Scan(&id)
 	if err != nil {
@@ -36,4 +36,22 @@ func (r *UserRepository) Create(ctx context.Context, usr *entities.UserInfo) (id
 	}
 
 	return id, nil
+}
+
+func (r *UserRepository) Update(ctx context.Context, usr *entities.UserInfo) error {
+	const op = "repositories.UserRepository.Update"
+
+	_, err := r.Pool.Exec(
+		ctx,
+		"UPDATE user_info SET firstname=$1, middlename=$2, lastname=$3, gender=$4, phone=$5, updated_at=$6 WHERE user_id=$7",
+		usr.Firstname, usr.Middlename, usr.Lastname, usr.Gender, usr.Phone, time.Now(), usr.UserID)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "SQLSTATE 22001") {
+			return services.ErrBadRequest
+		}
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }

@@ -77,3 +77,60 @@ func TestCreateDefaultErr(t *testing.T) {
 	// Check
 	assert.ErrorIs(t, err, testErr)
 }
+
+func TestUpdate(t *testing.T) {
+	// Test data
+	usr := &entities.UserInfo{
+		UserID:     1,
+		Firstname:  "test",
+		Middlename: "test",
+		Lastname:   "test",
+		Phone:      "test",
+		Gender:     "m",
+	}
+
+	// Service config
+	ctx := context.Background()
+	usrRepo := &mocks.UserRepo{}
+	usrRepo.On("Update", ctx, usr).Return(nil).Once()
+	sCfg := cfg{
+		usrRepo: usrRepo,
+	}
+
+	// Function
+	service := NewService(sCfg)
+	err := service.Update(ctx, usr)
+
+	// Check
+	assert.Nil(t, err)
+}
+
+func TestUpdateErr(t *testing.T) {
+	// Test data
+	usr := &entities.UserInfo{
+		UserID:     1,
+		Firstname:  "test",
+		Middlename: "test",
+		Lastname:   "test",
+		Phone:      "test",
+		Gender:     "m",
+	}
+
+	// Err
+	testErr := errors.New("test")
+
+	// Service config
+	ctx := context.Background()
+	usrRepo := &mocks.UserRepo{}
+	usrRepo.On("Update", ctx, usr).Return(testErr).Once()
+	sCfg := cfg{
+		usrRepo: usrRepo,
+	}
+
+	// Function
+	service := NewService(sCfg)
+	err := service.Update(ctx, usr)
+
+	// Check
+	assert.ErrorIs(t, err, testErr)
+}

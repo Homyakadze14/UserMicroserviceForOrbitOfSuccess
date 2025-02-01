@@ -1,8 +1,15 @@
 package controller
 
 import (
+	"context"
+	"errors"
+
+	"github.com/Homyakadze14/UserMicroserviceForOrbitOfSuccess/internal/entities"
+	"github.com/Homyakadze14/UserMicroserviceForOrbitOfSuccess/internal/services"
 	userv1 "github.com/Homyakadze14/UserMicroserviceForOrbitOfSuccess/proto/gen/user"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type serverAPI struct {
@@ -11,8 +18,58 @@ type serverAPI struct {
 }
 
 type User interface {
+	CreateDefault(ctx context.Context, usr *entities.UserInfo) error
+	Update(ctx context.Context, usr *entities.UserInfo) error
 }
 
 func Register(gRPCServer *grpc.Server, user User) {
 	userv1.RegisterUserServer(gRPCServer, &serverAPI{user: user})
+}
+
+func (s *serverAPI) CreateDefault(
+	ctx context.Context,
+	in *userv1.CreateDefaultRequest,
+) (*userv1.CreateDefaultResponse, error) {
+	data := &entities.UserInfo{
+		UserID: int(in.UserId),
+	}
+
+	err := s.user.CreateDefault(ctx, data)
+	if err != nil {
+		if errors.Is(err, services.ErrUserAlreadyExists) {
+			return nil, status.Error(codes.AlreadyExists, "user already exists")
+		}
+
+		return nil, status.Error(codes.Internal, "failed to create")
+	}
+
+	return &userv1.CreateDefaultResponse{
+		Success: true,
+	}, nil
+}
+
+func (s *serverAPI) UpdateInfo(
+	ctx context.Context,
+	in *userv1.UpdateInfoRequest,
+) (*userv1.UpdateInfoResponse, error) {
+	data := &entities.UserInfo{
+		UserID:     int(in.UserId),
+		Firstname:  in.Firstname,
+		Middlename: in.Middlename,
+		Lastname:   in.Lastname,
+		Gender:     in.Gender,
+		Phone:      in.Phone,
+	}
+
+	err := s.user.Update(ctx, data)
+	if err != nil {
+		if errors.Is(err, services.ErrBadRequest) {
+			return nil, status.Error(codes.InvalidArgument, "bad request")
+		}
+		return nil, status.Error(codes.Internal, "failed to update")
+	}
+
+	return &userv1.UpdateInfoResponse{
+		Success: true,
+	}, nil
 }

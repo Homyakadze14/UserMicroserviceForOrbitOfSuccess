@@ -12,6 +12,7 @@ import (
 
 var (
 	ErrUserAlreadyExists = errors.New("user already exists")
+	ErrBadRequest        = errors.New("bad request")
 )
 
 type UserService struct {
@@ -21,6 +22,7 @@ type UserService struct {
 
 type UserRepo interface {
 	Create(ctx context.Context, usr *entities.UserInfo) (id int, err error)
+	Update(ctx context.Context, usr *entities.UserInfo) error
 }
 
 func NewUserService(
@@ -49,6 +51,25 @@ func (s *UserService) CreateDefault(ctx context.Context, usr *entities.UserInfo)
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("successfully created default user")
+
+	return nil
+}
+
+func (s *UserService) Update(ctx context.Context, usr *entities.UserInfo) error {
+	const op = "User.Update"
+
+	log := s.log.With(
+		slog.String("op", op),
+		slog.String("acc", usr.String()),
+	)
+
+	log.Info("trying to update user")
+	err := s.usrRepo.Update(ctx, usr)
+	if err != nil {
+		log.Error(err.Error())
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	log.Info("successfully updated user")
 
 	return nil
 }

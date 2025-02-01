@@ -42,6 +42,24 @@ func (_m *UserRepo) Create(ctx context.Context, usr *entities.UserInfo) (int, er
 	return r0, r1
 }
 
+// Update provides a mock function with given fields: ctx, usr
+func (_m *UserRepo) Update(ctx context.Context, usr *entities.UserInfo) error {
+	ret := _m.Called(ctx, usr)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *entities.UserInfo) error); ok {
+		r0 = rf(ctx, usr)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // NewUserRepo creates a new instance of UserRepo. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewUserRepo(t interface {
