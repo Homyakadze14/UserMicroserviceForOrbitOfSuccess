@@ -59,6 +59,7 @@ func (s *serverAPI) UpdateInfo(
 		Lastname:   in.Lastname,
 		Gender:     in.Gender,
 		Phone:      in.Phone,
+		IconURL:    in.IconUrl,
 	}
 
 	err := s.user.Update(ctx, data)

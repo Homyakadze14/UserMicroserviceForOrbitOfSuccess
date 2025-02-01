@@ -21,7 +21,6 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	User_CreateDefault_FullMethodName = "/User/CreateDefault"
 	User_UpdateInfo_FullMethodName    = "/User/UpdateInfo"
-	User_UpdateIcon_FullMethodName    = "/User/UpdateIcon"
 )
 
 // UserClient is the client API for User service.
@@ -30,7 +29,6 @@ const (
 type UserClient interface {
 	CreateDefault(ctx context.Context, in *CreateDefaultRequest, opts ...grpc.CallOption) (*CreateDefaultResponse, error)
 	UpdateInfo(ctx context.Context, in *UpdateInfoRequest, opts ...grpc.CallOption) (*UpdateInfoResponse, error)
-	UpdateIcon(ctx context.Context, in *IconRequest, opts ...grpc.CallOption) (*IconResponse, error)
 }
 
 type userClient struct {
@@ -61,23 +59,12 @@ func (c *userClient) UpdateInfo(ctx context.Context, in *UpdateInfoRequest, opts
 	return out, nil
 }
 
-func (c *userClient) UpdateIcon(ctx context.Context, in *IconRequest, opts ...grpc.CallOption) (*IconResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(IconResponse)
-	err := c.cc.Invoke(ctx, User_UpdateIcon_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility.
 type UserServer interface {
 	CreateDefault(context.Context, *CreateDefaultRequest) (*CreateDefaultResponse, error)
 	UpdateInfo(context.Context, *UpdateInfoRequest) (*UpdateInfoResponse, error)
-	UpdateIcon(context.Context, *IconRequest) (*IconResponse, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -93,9 +80,6 @@ func (UnimplementedUserServer) CreateDefault(context.Context, *CreateDefaultRequ
 }
 func (UnimplementedUserServer) UpdateInfo(context.Context, *UpdateInfoRequest) (*UpdateInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateInfo not implemented")
-}
-func (UnimplementedUserServer) UpdateIcon(context.Context, *IconRequest) (*IconResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateIcon not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 func (UnimplementedUserServer) testEmbeddedByValue()              {}
@@ -154,24 +138,6 @@ func _User_UpdateInfo_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _User_UpdateIcon_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(IconRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServer).UpdateIcon(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: User_UpdateIcon_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).UpdateIcon(ctx, req.(*IconRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -186,10 +152,6 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateInfo",
 			Handler:    _User_UpdateInfo_Handler,
-		},
-		{
-			MethodName: "UpdateIcon",
-			Handler:    _User_UpdateIcon_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
