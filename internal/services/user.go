@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strconv"
 
 	"github.com/Homyakadze14/UserMicroserviceForOrbitOfSuccess/internal/entities"
 	"github.com/google/uuid"
@@ -13,6 +14,7 @@ import (
 var (
 	ErrUserAlreadyExists = errors.New("user already exists")
 	ErrBadRequest        = errors.New("bad request")
+	ErrUserNotFound      = errors.New("user not found")
 )
 
 type UserService struct {
@@ -23,6 +25,7 @@ type UserService struct {
 type UserRepo interface {
 	Create(ctx context.Context, usr *entities.UserInfo) (id int, err error)
 	Update(ctx context.Context, usr *entities.UserInfo) error
+	Get(ctx context.Context, uid int) (usr *entities.UserInfo, err error)
 }
 
 func NewUserService(
@@ -72,4 +75,23 @@ func (s *UserService) Update(ctx context.Context, usr *entities.UserInfo) error 
 	log.Info("successfully updated user")
 
 	return nil
+}
+
+func (s *UserService) Get(ctx context.Context, uid int) (*entities.UserInfo, error) {
+	const op = "User.Get"
+
+	log := s.log.With(
+		slog.String("op", op),
+		slog.String("uid", strconv.Itoa(uid)),
+	)
+
+	log.Info("trying to get user")
+	usr, err := s.usrRepo.Get(ctx, uid)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	log.Info("successfully geted user")
+
+	return usr, nil
 }

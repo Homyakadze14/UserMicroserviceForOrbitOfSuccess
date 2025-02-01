@@ -134,3 +134,49 @@ func TestUpdateErr(t *testing.T) {
 	// Check
 	assert.ErrorIs(t, err, testErr)
 }
+
+func TestGet(t *testing.T) {
+	// Test data
+	uid := 1
+	tUsr := &entities.UserInfo{}
+
+	// Service config
+	ctx := context.Background()
+	usrRepo := &mocks.UserRepo{}
+	usrRepo.On("Get", ctx, uid).Return(tUsr, nil).Once()
+	sCfg := cfg{
+		usrRepo: usrRepo,
+	}
+
+	// Function
+	service := NewService(sCfg)
+	usr, err := service.Get(ctx, uid)
+
+	// Check
+	assert.Nil(t, err)
+	assert.Equal(t, tUsr, usr)
+}
+
+func TestGetErr(t *testing.T) {
+	// Test data
+	uid := 1
+
+	// Err
+	testErr := errors.New("test")
+
+	// Service config
+	ctx := context.Background()
+	usrRepo := &mocks.UserRepo{}
+	usrRepo.On("Get", ctx, uid).Return(nil, testErr).Once()
+	sCfg := cfg{
+		usrRepo: usrRepo,
+	}
+
+	// Function
+	service := NewService(sCfg)
+	usr, err := service.Get(ctx, uid)
+
+	// Check
+	assert.ErrorIs(t, err, testErr)
+	assert.Nil(t, usr)
+}

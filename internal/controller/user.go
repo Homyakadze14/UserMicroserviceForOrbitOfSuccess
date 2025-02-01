@@ -20,6 +20,7 @@ type serverAPI struct {
 type User interface {
 	CreateDefault(ctx context.Context, usr *entities.UserInfo) error
 	Update(ctx context.Context, usr *entities.UserInfo) error
+	Get(ctx context.Context, uid int) (*entities.UserInfo, error)
 }
 
 func Register(gRPCServer *grpc.Server, user User) {
@@ -72,5 +73,27 @@ func (s *serverAPI) UpdateInfo(
 
 	return &userv1.UpdateInfoResponse{
 		Success: true,
+	}, nil
+}
+
+func (s *serverAPI) GetInfo(
+	ctx context.Context,
+	in *userv1.GetInfoRequest,
+) (*userv1.GetInfoResponse, error) {
+	usr, err := s.user.Get(ctx, int(in.UserId))
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+		return nil, status.Error(codes.Internal, "failed to get")
+	}
+
+	return &userv1.GetInfoResponse{
+		Firstname:  usr.Firstname,
+		Middlename: usr.Middlename,
+		Lastname:   usr.Lastname,
+		Gender:     usr.Gender,
+		Phone:      usr.Phone,
+		IconUrl:    usr.IconURL,
 	}, nil
 }

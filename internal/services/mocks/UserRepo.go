@@ -42,6 +42,36 @@ func (_m *UserRepo) Create(ctx context.Context, usr *entities.UserInfo) (int, er
 	return r0, r1
 }
 
+// Get provides a mock function with given fields: ctx, uid
+func (_m *UserRepo) Get(ctx context.Context, uid int) (*entities.UserInfo, error) {
+	ret := _m.Called(ctx, uid)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Get")
+	}
+
+	var r0 *entities.UserInfo
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) (*entities.UserInfo, error)); ok {
+		return rf(ctx, uid)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int) *entities.UserInfo); ok {
+		r0 = rf(ctx, uid)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entities.UserInfo)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, uid)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: ctx, usr
 func (_m *UserRepo) Update(ctx context.Context, usr *entities.UserInfo) error {
 	ret := _m.Called(ctx, usr)

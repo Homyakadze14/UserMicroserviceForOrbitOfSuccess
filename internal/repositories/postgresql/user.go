@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/Homyakadze14/UserMicroserviceForOrbitOfSuccess/internal/entities"
 	"github.com/Homyakadze14/UserMicroserviceForOrbitOfSuccess/internal/services"
 	"github.com/Homyakadze14/UserMicroserviceForOrbitOfSuccess/pkg/postgres"
+	"github.com/jackc/pgx/v5"
 )
 
 type UserRepository struct {
@@ -54,4 +56,24 @@ func (r *UserRepository) Update(ctx context.Context, usr *entities.UserInfo) err
 	}
 
 	return nil
+}
+
+func (r *UserRepository) Get(ctx context.Context, uid int) (*entities.UserInfo, error) {
+	const op = "repositories.UserRepository.Get"
+
+	row := r.Pool.QueryRow(
+		ctx,
+		"SELECT firstname, middlename, lastname, gender, phone, icon_url FROM user_info WHERE user_id=$1",
+		uid)
+
+	usr := &entities.UserInfo{}
+	err := row.Scan(&usr.Firstname, &usr.Middlename, &usr.Lastname, &usr.Gender, &usr.Phone, &usr.IconURL)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, services.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return usr, nil
 }
